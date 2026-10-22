@@ -22,5 +22,17 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Barcode / SKU read from a scanner or typed at the POS. Must be unique. */
+    @Column(name = "barcode", nullable = false, unique = true, length = 64)
+    private String barcode;
+
+    /** Human readable name, e.g. "Cola 500ml". */
+    @Column(name = "name", nullable = false, length = 128)
+    private String name;
+
+    /** Category used for grid filtering. */
+    @Column(name = "category", nullable = false, length = 64)
+    private String category;
     
 }
