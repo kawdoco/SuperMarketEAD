@@ -34,5 +34,17 @@ public class Product {
     /** Category used for grid filtering. */
     @Column(name = "category", nullable = false, length = 64)
     private String category;
+
+    /** Selling price in the POS currency (e.g. 1500). */
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    /** Current on-hand stock. */
+    @Column(nullable = false)
+    private Integer stock;
+
+    /** Low stock threshold shown in the UI when restocking. */
+    @Column(nullable = false)
+    private Integer lowStockThreshold;
     
 }
