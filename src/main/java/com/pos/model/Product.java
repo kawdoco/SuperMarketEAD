@@ -118,5 +118,25 @@ public class Product {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public Integer getLowStockThreshold() {
+        return lowStockThreshold;
+    }
+
+    public void setLowStockThreshold(Integer lowStockThreshold) {
+        this.lowStockThreshold = lowStockThreshold;
+    }
+
+    public String getSize() {
+        return size;
+    }
     
 }
