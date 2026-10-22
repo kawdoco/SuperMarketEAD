@@ -138,5 +138,25 @@ public class Product {
     public String getSize() {
         return size;
     }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
     
 }
