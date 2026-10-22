@@ -62,5 +62,22 @@ public class Product {
     /** Last time this product was sold (used by the activity report). */
     @Column(name = "last_sold_at")
     private java.time.Instant lastSoldAt;
+
+    /** Insert / audit timestamps. */
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.time.Instant createdAt;
+
+    @Column(name = "updated_at")
+    private java.time.Instant updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        java.time.Instant now = java.time.Instant.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        updatedAt = now;
+    }
+
     
 }
