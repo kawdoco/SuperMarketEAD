@@ -46,5 +46,21 @@ public class Product {
     /** Low stock threshold shown in the UI when restocking. */
     @Column(nullable = false)
     private Integer lowStockThreshold;
+
+    /** Blanket size. */
+    @Column(name = "size", length = 32)
+    private String size;
+
+    /** Simple textual description. */
+    @Column(name = "description", length = 512)
+    private String description;
+
+    /** 0 = inactive, 1 = active. */
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    /** Last time this product was sold (used by the activity report). */
+    @Column(name = "last_sold_at")
+    private java.time.Instant lastSoldAt;
     
 }
