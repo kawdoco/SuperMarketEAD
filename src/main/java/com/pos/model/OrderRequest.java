@@ -55,3 +55,16 @@ public class OrderRequest {
     public String getCardLastFour() {
         return cardLastFour;
     }
+
+    public void setCardLastFour(String cardLastFour) {
+        this.cardLastFour = cardLastFour;
+    }
+
+    public String getTerminal() {
+        return terminal;
+    }
+
+    public void setTerminal(String terminal) {
+        this.terminal = terminal;
+    }
+}
