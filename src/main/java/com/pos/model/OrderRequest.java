@@ -31,3 +31,15 @@ public class OrderRequest {
     public String getCustomerName() {
         return customerName;
     }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
