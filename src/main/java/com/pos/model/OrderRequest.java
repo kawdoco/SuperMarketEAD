@@ -43,3 +43,15 @@ public class OrderRequest {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
+
+    public BigDecimal getCashTendered() {
+        return cashTendered;
+    }
+
+    public void setCashTendered(BigDecimal cashTendered) {
+        this.cashTendered = cashTendered;
+    }
+
+    public String getCardLastFour() {
+        return cardLastFour;
+    }
