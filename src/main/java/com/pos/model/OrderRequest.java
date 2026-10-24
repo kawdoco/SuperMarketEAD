@@ -19,3 +19,15 @@ public class OrderRequest {
     private BigDecimal cashTendered;
     private String cardLastFour;
     private String terminal;
+
+    public List<ItemDto> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ItemDto> items) {
+        this.items = items;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
