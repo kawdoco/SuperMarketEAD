@@ -10,3 +10,12 @@ import java.util.List;
  * {@code POST /api/checkout}; the controller converts it into a persisted
  * {@link Order}.
  */
+
+public class OrderRequest {
+
+    private List<ItemDto> items;
+    private String customerName;
+    private PaymentMethod paymentMethod;
+    private BigDecimal cashTendered;
+    private String cardLastFour;
+    private String terminal;
