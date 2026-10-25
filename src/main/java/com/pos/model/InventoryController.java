@@ -91,5 +91,31 @@ public class InventoryController {
         }
         return "redirect:/inventory";
     }
+/** Quick +/- stock adjustment from the list view. */
+    @PostMapping("/stock/{id}")
+    public String adjustStock(@PathVariable Long id,
+                              @RequestParam("delta") int delta,
+                              RedirectAttributes ra) {
+        productRepository.findById(id).ifPresent(p -> {
+            p.setStock(Math.max(0, p.getStock() + delta));
+            productRepository.save(p);
+        });
+        return "redirect:/inventory";
+    }
+
+    /** Soft delete: products are deactivated, never removed from the DB. */
+    @PostMapping("/delete/{id}")
+    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+        productRepository.findById(id).ifPresent(p -> {
+            p.setActive(false);
+            productRepository.save(p);
+            ra.addFlashAttribute("success", "Deactivated product \"" + p.getName() + "\"");
+        });
+        return "redirect:/inventory";
+    }
+}
+ {
+    
+}
 
     
