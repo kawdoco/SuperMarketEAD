@@ -24,3 +24,33 @@ import java.util.Map;
 /**
  * Renders the touch-friendly POS home, category filter, and product search.
  */
+@Controller
+public class PosController {
+
+    private static final Logger log = LoggerFactory.getLogger(PosController.class);
+
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+
+    public PosController(ProductRepository productRepository, OrderRepository orderRepository) {
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+    }
+
+    /**
+     * Root of the POS UI. Pre-loads a small working set of products so the
+     * terminal can boot and start scanning with no first-run DB scan.
+     */
+    @GetMapping("/")
+    public String home(Model model) {
+        loadProducts(model);
+        return "pos";
+    }
+
+    @GetMapping("/pos")
+    public String pos(Model model) {
+        loadProducts(model);
+        return "pos";
+    }
+
+    
