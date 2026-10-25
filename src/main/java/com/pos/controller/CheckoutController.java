@@ -120,4 +120,50 @@ public class CheckoutController {
             return o;
         });
 
-        
+        log.info("Order #{} completed: {} subtotal={} tax={} total={}",
+                saved.getId(), saved.getPaymentMethod(), fmt(subtotal), fmt(tax), fmt(total));
+
+        // ---- Hardware: drawer + receipt, non-fatal. ----
+        boolean drawerOpened = false;
+        HardwareService hardware = hardwareServiceProvider.getIfAvailable();
+        if (hardware != null) {
+            try {
+                boolean openDrawer = "ALL".equals(drawerOpenOn)
+                        || saved.getPaymentMethod() == PaymentMethod.CASH;
+                if (openDrawer) {
+                    drawerOpened = hardware.openCashDrawer();
+                }
+                hardware.printReceipt(saved);
+            } catch (RuntimeException e) {
+                log.warn("Hardware post-processing failed for order #{}", saved.getId(), e);
+            }
+        }
+
+        // ---- Response for the confirmation UI. ----
+        Map<String, Object> response = new HashMap<>();
+        response.put("orderId", saved.getId());
+        response.put("status", saved.getStatus().name());
+        response.put("subtotal", fmt(subtotal));
+        response.put("tax", fmt(tax));
+        response.put("total", fmt(total));
+        response.put("cashTendered", saved.getCashTendered() != null
+                ? fmt(saved.getCashTendered()) : null);
+        response.put("remaining", change(total, saved.getCashTendered()) != null
+                ? fmt(change(total, saved.getCashTendered())) : null);
+        response.put("paymentMethod", saved.getPaymentMethod().name());
+        response.put("cardLastFour", saved.getCardLastFour());
+        response.put("drawerOpened", drawerOpened);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /** Manual "No sale" drawer open from the sale screen. */
+    @PostMapping("/api/drawer/open")
+    public ResponseEntity<Map<String, Object>> openDrawer() {
+        HardwareService hardware = hardwareServiceProvider.getIfAvailable();
+        boolean opened = hardware != null && hardware.openCashDrawer();
+        Map<String, Object> body = new HashMap<>();
+        body.put("opened", opened);
+        body.put("hardwareEnabled", hardware != null);
+        return ResponseEntity.ok(body);
+    }
