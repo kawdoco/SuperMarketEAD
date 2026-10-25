@@ -100,4 +100,34 @@ public class PosController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    
+    @GetMapping("/api/categories")
+    public String categories(Model model) {
+        model.addAttribute("categories", productRepository.findDistinctCategories());
+        return "fragments/products :: categoryList";
+    }
+
+    /**
+     * Pre-load a modest working set used to seed the touch grid and the
+     * search dropdown. Real time-running queries go through /api/products.
+     */
+    private void loadProducts(Model model) {
+        List<Product> products = productRepository.findActiveOrdered();
+        // Cap the working set so the terminal boots quickly and stays light
+        // even on a box where the SQLite file is large.
+        if (products.size() > 2000) {
+            products = products.subList(0, 2000);
+        }
+        model.addAttribute("products", products);
+        model.addAttribute("allCategories", productRepository.findDistinctCategories());
+
+        // Today's headline numbers for the dashboard strip.
+        ZoneId zone = ZoneId.systemDefault();
+        Instant start = LocalDate.now(zone).atStartOfDay(zone).toInstant();
+        Instant end = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
+        BigDecimal salesToday = orderRepository.sumTotalByDay(start, end);
+        Long ordersToday = orderRepository.countCompletedByDay(start, end);
+        model.addAttribute("salesToday", salesToday == null ? BigDecimal.ZERO : salesToday);
+        model.addAttribute("ordersToday", ordersToday == null ? 0L : ordersToday);
+        model.addAttribute("lowStockCount", productRepository.countLowStock());
+    }
+}
