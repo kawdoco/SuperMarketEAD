@@ -79,4 +79,45 @@ public class CheckoutController {
             return ResponseEntity.badRequest().body(error);
         }
 
+        // ---- Build the model line items. ----
+        List<OrderItem> items = request.getItems().stream()
+                .map(this::toOrderItem)
+                .toList();
+
+        // ---- Server-side totals: never trust client arithmetic. ----
+        BigDecimal subtotal = items.stream()
+                .map(OrderItem::getLineTotal)
+                .filter(i -> i != null && i.signum() > 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal tax = subtotal.multiply(TAX_RATE).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal total = subtotal.add(tax).setScale(2, java.math.RoundingMode.HALF_UP);
+
+        // ---- Persist. ----
+        Order order = Order.builder()
+                .terminal(request.getTerminal() != null ? request.getTerminal() : "POS-1")
+                .customerName(request.getCustomerName())
+                .status(OrderStatus.COMPLETED)
+                .paymentMethod(request.getPaymentMethod())
+                .cashTendered(request.getPaymentMethod() == PaymentMethod.CASH
+                        ? request.getCashTendered()
+                        : null)
+                .cardLastFour(request.getPaymentMethod() == PaymentMethod.CARD
+                        ? request.getCardLastFour()
+                        : null)
+                .subtotal(subtotal)
+                .tax(tax)
+                .total(total)
+                .items(items)
+                .createdAt(Instant.now())
+                .build();
+
+        // Order + stock deduction commit together (single SQLite transaction).
+        Order saved = tx.execute(status -> {
+            Order o = orderRepository.save(order);
+            deductStock(items);
+            return o;
+        });
+
         
