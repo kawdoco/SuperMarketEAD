@@ -27,3 +27,32 @@ import java.util.List;
  * {@link LocalDate} window; everything is computed between its start and
  * end instants in the machine's local zone.
  */
+@Controller
+@RequestMapping("/reports")
+public class ReportController {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
+
+    private final OrderRepository orderRepository;
+
+    public ReportController(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    /**
+     * Daily dashboard: totals for the selected day plus the recent order list.
+     *
+     * @param date optional ISO date (yyyy-MM-dd); defaults to today
+     */
+    @GetMapping
+    public String daily(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Model model) {
+
+        LocalDate day = date != null ? date : LocalDate.now();
+        ZoneId zone = ZoneId.systemDefault();
+        Instant start = day.atStartOfDay(zone).toInstant();
+        Instant end = day.plusDays(1).atStartOfDay(zone).toInstant();
+
+        
