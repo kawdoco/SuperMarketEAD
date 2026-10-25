@@ -38,3 +38,45 @@ import java.util.Map;
  * Hardware faults are logged and swallowed — a broken printer can never
  * lose a completed sale.
  */
+@RestController
+public class CheckoutController {
+
+    private static final Logger log = LoggerFactory.getLogger(CheckoutController.class);
+
+    /** Flat 10% sales tax; override per site by changing this constant. */
+    private static final BigDecimal TAX_RATE = new BigDecimal("0.10");
+
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final TransactionTemplate tx;
+    /**
+     * Optional: {@link HardwareService} is a {@code @ConditionalOnProperty} bean
+     * (app.hardware.enabled). When hardware is disabled the provider resolves
+     * to null and checkout proceeds without printing / drawer pulses.
+     */
+    private final ObjectProvider<HardwareService> hardwareServiceProvider;
+
+    /** ALL = open the drawer on every finalized bill; CASH = cash sales only. */
+    private final String drawerOpenOn;
+
+    public CheckoutController(OrderRepository orderRepository,
+                              ProductRepository productRepository,
+                              PlatformTransactionManager txManager,
+                              ObjectProvider<HardwareService> hardwareServiceProvider,
+                              @Value("${app.hardware.drawer-open-on:ALL}") String drawerOpenOn) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.tx = new TransactionTemplate(txManager);
+        this.hardwareServiceProvider = hardwareServiceProvider;
+        this.drawerOpenOn = drawerOpenOn == null ? "ALL" : drawerOpenOn.trim().toUpperCase();
+    }
+
+    @PostMapping("/api/checkout")
+    public ResponseEntity<Map<String, Object>> completeOrder(@RequestBody OrderRequest request) {
+        if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Cart is empty");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        
