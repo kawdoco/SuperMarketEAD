@@ -15,13 +15,11 @@ import java.util.List;
  * {@link List} so report queries never need to look at the DB across
  * session boundaries.
  */
-
 @Entity
 @Table(name = "orders", indexes = {
         @Index(name = "idx_orders_customer", columnList = "customer_name"),
         @Index(name = "idx_orders_created_at", columnList = "created_at")
 })
-
 public class Order {
 
     @Id
