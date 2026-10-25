@@ -55,4 +55,32 @@ public class ReportController {
         Instant start = day.atStartOfDay(zone).toInstant();
         Instant end = day.plusDays(1).atStartOfDay(zone).toInstant();
 
+        // ---- Aggregates (single SQLite pass each, no in-memory accumulation) ----
+        BigDecimal total = nvl(orderRepository.sumTotalByDay(start, end));
+        BigDecimal cash = nvl(orderRepository.sumCashByDay(start, end));
+        BigDecimal card = nvl(orderRepository.sumCardByDay(start, end));
+        Long count = orderRepository.countCompletedByDay(start, end);
+        Long cashCount = orderRepository.countCashByDay(start, end);
+
+        // ---- Order list for the selected day (newest first) ----
+        List<Order> orders = orderRepository.findByCreatedAtBetween(start, end);
+        orders.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+
+        model.addAttribute("day", day);
+        model.addAttribute("orders", orders);
+        model.addAttribute("totalSales", total);
+        model.addAttribute("cashSales", cash);
+        model.addAttribute("cardSales", card);
+        model.addAttribute("orderCount", count != null ? count : 0L);
+        model.addAttribute("cashCount", cashCount != null ? cashCount : 0L);
+        model.addAttribute("avgSale", count != null && count > 0
+                ? total.divide(BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
+
+        return "reports";
+    }
+
+    /** Full detail of one order, including the embedded line items. */
+    @GetMapping("/order/{id}")
+    public String orderDetail(@PathVariable Long id, Model model) {
         
