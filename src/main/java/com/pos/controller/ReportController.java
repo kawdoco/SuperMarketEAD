@@ -83,4 +83,17 @@ public class ReportController {
     /** Full detail of one order, including the embedded line items. */
     @GetMapping("/order/{id}")
     public String orderDetail(@PathVariable Long id, Model model) {
-        
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            log.warn("Report detail: order #{} not found", id);
+            return "redirect:/reports";
+        }
+        model.addAttribute("order", order);
+        model.addAttribute("items", order.getItems());
+        return "order-detail";
+    }
+
+    private BigDecimal nvl(BigDecimal v) {
+        return v != null ? v : BigDecimal.ZERO;
+    }
+}
