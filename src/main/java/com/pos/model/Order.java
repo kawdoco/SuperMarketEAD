@@ -208,3 +208,96 @@ public class Order {
     public static Builder builder() {
         return new Builder();
     }
+
+    /** Fluent builder for constructing an {@link Order}. */
+    public static class Builder {
+        private Long id;
+        private String terminal;
+        private String customerName;
+        private OrderStatus status;
+        private PaymentMethod paymentMethod;
+        private BigDecimal cashTendered;
+        private String cardLastFour;
+        private BigDecimal subtotal;
+        private BigDecimal tax;
+        private BigDecimal total;
+        private String itemsJson;
+        private Instant createdAt;
+
+        private Builder() {
+        }
+
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder terminal(String terminal) {
+            this.terminal = terminal;
+            return this;
+        }
+
+        public Builder customerName(String customerName) {
+            this.customerName = customerName;
+            return this;
+        }
+
+        public Builder status(OrderStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder paymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+            return this;
+        }
+
+        public Builder cashTendered(BigDecimal cashTendered) {
+            this.cashTendered = cashTendered;
+            return this;
+        }
+
+        public Builder cardLastFour(String cardLastFour) {
+            this.cardLastFour = cardLastFour;
+            return this;
+        }
+
+        public Builder subtotal(BigDecimal subtotal) {
+            this.subtotal = subtotal;
+            return this;
+        }
+
+        public Builder tax(BigDecimal tax) {
+            this.tax = tax;
+            return this;
+        }
+
+        public Builder total(BigDecimal total) {
+            this.total = total;
+            return this;
+        }
+
+        public Builder itemsJson(String itemsJson) {
+            this.itemsJson = itemsJson;
+            return this;
+        }
+
+        public Builder createdAt(Instant createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder items(List<OrderItem> items) {
+            if (items == null || items.isEmpty()) {
+                this.itemsJson = null;
+            } else {
+                try {
+                    this.itemsJson = new com.fasterxml.jackson.databind.ObjectMapper()
+                            .registerModules()
+                            .writeValueAsString(items);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to serialise order items", e);
+                }
+            }
+            return this;
+        }
