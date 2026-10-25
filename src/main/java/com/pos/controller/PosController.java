@@ -53,4 +53,51 @@ public class PosController {
         return "pos";
     }
 
+    /**
+     * AJAX endpoint that returns matching products on a keystroke. The UI
+     * renders them directly so the terminal stays responsive on a modest
+     * CPU with a modest (2-4GB) footprint.
+     */
+    @GetMapping("/api/products")
+    public String products(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "") String q,
+            Model model) {
+        List<Product> products;
+
+        if (q != null && !q.isBlank()) {
+            // Search across barcode, name and category.
+            products = productRepository.searchBy(q);
+        } else if (category != null && !category.isBlank()) {
+            products = productRepository.searchByCategoryAndNameLike(category, q);
+        } else {
+            products = productRepository.findActiveOrdered();
+        }
+
+        model.addAttribute("products", products);
+        return "fragments/products :: productGrid";
+    }
+
+    /**
+     * Exact barcode lookup used by the scanner. Returns 200 + product JSON,
+     * or 404 when the code is unknown / inactive.
+     */
+    @GetMapping("/api/products/barcode/{code}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> byBarcode(@PathVariable String code) {
+        return productRepository.findByBarcode(code.trim())
+                .filter(p -> Boolean.TRUE.equals(p.getActive()))
+                .map(p -> {
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("id", p.getId());
+                    body.put("barcode", p.getBarcode());
+                    body.put("name", p.getName());
+                    body.put("category", p.getCategory());
+                    body.put("price", p.getPrice());
+                    body.put("stock", p.getStock());
+                    return ResponseEntity.ok(body);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     
