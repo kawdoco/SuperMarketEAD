@@ -1,6 +1,4 @@
-package com.pos.model;
-
-public package com.pos.controller;
+package com.pos.controller;
 
 import com.pos.model.Product;
 import com.pos.repository.ProductRepository;
@@ -91,7 +89,8 @@ public class InventoryController {
         }
         return "redirect:/inventory";
     }
-/** Quick +/- stock adjustment from the list view. */
+
+    /** Quick +/- stock adjustment from the list view. */
     @PostMapping("/stock/{id}")
     public String adjustStock(@PathVariable Long id,
                               @RequestParam("delta") int delta,
@@ -114,8 +113,3 @@ public class InventoryController {
         return "redirect:/inventory";
     }
 }
- {
-    
-}
-
-    
