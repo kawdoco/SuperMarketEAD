@@ -38,4 +38,43 @@ public class ItemDto {
         this.barcode = barcode;
     }
 
-    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getLineTotal() {
+        return lineTotal;
+    }
+
+    public void setLineTotal(BigDecimal lineTotal) {
+        this.lineTotal = lineTotal;
+    }
+}
