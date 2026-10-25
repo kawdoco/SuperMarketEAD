@@ -167,3 +167,42 @@ public class CheckoutController {
         body.put("hardwareEnabled", hardware != null);
         return ResponseEntity.ok(body);
     }
+
+    /** Reduce on-hand stock for every sold line (never below zero). */
+    private void deductStock(List<OrderItem> items) {
+        Instant now = Instant.now();
+        for (OrderItem item : items) {
+            if (item.getBarcode() == null) {
+                continue;
+            }
+            productRepository.findByBarcode(item.getBarcode()).ifPresent(p -> {
+                int current = p.getStock() == null ? 0 : p.getStock();
+                p.setStock(Math.max(0, current - item.getQuantity()));
+                p.setLastSoldAt(now);
+                productRepository.save(p);
+            });
+        }
+    }
+
+    private OrderItem toOrderItem(ItemDto dto) {
+        BigDecimal unitPrice = dto.getUnitPrice() != null ? dto.getUnitPrice() : BigDecimal.ZERO;
+        int qty = dto.getQuantity() != null ? dto.getQuantity() : 1;
+        BigDecimal lineTotal = dto.getLineTotal() != null
+                ? dto.getLineTotal()
+                : unitPrice.multiply(BigDecimal.valueOf(qty)).setScale(2, java.math.RoundingMode.HALF_UP);
+        return new OrderItem(dto.getBarcode(), dto.getName(), dto.getCategory(),
+                unitPrice, qty, lineTotal);
+    }
+
+    private BigDecimal change(BigDecimal total, BigDecimal tendered) {
+        if (tendered == null || total == null) {
+            return null;
+        }
+        BigDecimal diff = tendered.subtract(total).setScale(2, java.math.RoundingMode.HALF_UP);
+        return diff.signum() >= 0 ? diff : BigDecimal.ZERO;
+    }
+
+    private String fmt(BigDecimal v) {
+        return v == null ? "0.00" : String.format("%.2f", v);
+    }
+}
