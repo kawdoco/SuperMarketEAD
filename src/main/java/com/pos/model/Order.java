@@ -301,3 +301,22 @@ public class Order {
             }
             return this;
         }
+
+        public Order build() {
+            Order order = new Order();
+            order.id = this.id;
+            order.terminal = this.terminal;
+            order.customerName = this.customerName;
+            order.status = this.status;
+            order.paymentMethod = this.paymentMethod;
+            order.cashTendered = this.cashTendered;
+            order.cardLastFour = this.cardLastFour;
+            order.subtotal = this.subtotal;
+            order.tax = this.tax;
+            order.total = this.total;
+            order.itemsJson = this.itemsJson;
+            order.createdAt = this.createdAt;
+            return order;
+        }
+    }
+}
