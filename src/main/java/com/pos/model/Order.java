@@ -174,3 +174,37 @@ public class Order {
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
+
+    public List<OrderItem> getItems() {
+        if (itemsJson == null || itemsJson.isBlank()) {
+            return new ArrayList<>();
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper()
+                    .registerModules()
+                    .readValue(itemsJson, new com.fasterxml.jackson.core.type.TypeReference<List<OrderItem>>() {
+                    });
+        } catch (Exception e) {
+            throw new IllegalStateException("Corrupt order items payload", e);
+        }
+    }
+
+    /** Persist the current live line items as compact JSON. */
+    public void setItems(List<OrderItem> items) {
+        if (items == null || items.isEmpty()) {
+            this.itemsJson = null;
+            return;
+        }
+        try {
+            this.itemsJson = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .registerModules()
+                    .writeValueAsString(items);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialise order items", e);
+        }
+    }
+
+    /** Builder-style construction for JPA-friendly object creation. */
+    public static Builder builder() {
+        return new Builder();
+    }
