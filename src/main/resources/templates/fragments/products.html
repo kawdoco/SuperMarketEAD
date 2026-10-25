@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+    Product grid fragment.
+    Returned by GET /api/products and swapped into #productGrid on the POS page.
+    All product data is mirrored onto the Add button as data-* attributes so
+    the vanilla JS cart can read it without any extra lookup. The whole card
+    is clickable (handled in pos.html).
+-->
+<div class="product-grid" th:fragment="productGrid"
+     th:attr="data-count=${#lists.size(products)}">
+
+    <div class="p-card" th:each="p : ${products}"
+         th:classappend="${p.stock <= 0} ? 'out-of-stock'">
+        <div class="p-cat" th:text="${p.category}">Category</div>
+        <div class="p-name" th:text="${p.name}">Product name</div>
+        <div class="p-code"><i class="bi bi-upc"></i> <span th:text="${p.barcode}">0000</span></div>
+        <div class="p-foot">
+            <span class="p-price" th:text="${#numbers.formatDecimal(p.price, 1, 2)}">0.00</span>
+            <span class="p-stock"
+                  th:classappend="${p.stock <= 0} ? 'none' : (${p.stock <= p.lowStockThreshold} ? 'low' : 'ok')"
+                  th:text="${p.stock > 0} ? ${p.stock} + ' in stock' : 'Out of stock'">0 in stock</span>
+        </div>
+        <button type="button" class="add-btn" aria-label="Add to cart"
+                th:attr="data-id=${p.id},
+                         data-barcode=${p.barcode},
+                         data-name=${p.name},
+                         data-category=${p.category},
+                         data-price=${p.price.toPlainString()},
+                         data-stock=${p.stock}"
+                th:disabled="${p.stock <= 0}">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+    </div>
+
+    <!-- Empty state rendered when the search/filter matched nothing -->
+    <div class="grid-empty" th:if="${#lists.isEmpty(products)}">
+        <i class="bi bi-search"></i>
+        <p>No products match your search.</p>
+    </div>
+</div>
+
+<!-- Category chips (GET /api/categories) -->
+<div th:fragment="categoryList">
+    <span th:each="c : ${categories}" th:text="${c}"></span>
+</div>
+
+</body>
+</html>

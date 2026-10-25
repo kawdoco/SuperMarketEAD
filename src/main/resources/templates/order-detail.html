@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>POS Terminal — Order detail</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        body { background: #f1f3f4; }
+        header.top {
+            background: #fff; border-bottom: 1px solid #e0e0e0;
+            padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+        }
+        header.top .brand { font-weight: 700; color: #1a73e8; }
+        header.top .spacer { flex: 1 1 auto; }
+        header.top .nav-link { text-decoration: none; color: #5f6368; font-weight: 600; padding: 0.4rem 0.7rem; border-radius: 8px; }
+        header.top .nav-link.active, header.top .nav-link:hover { background: #e8f0fe; color: #1a73e8; }
+        .receipt { max-width: 560px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<header class="top mb-3">
+    <span class="brand"><i class="bi bi-cash-stack"></i> POS Terminal</span>
+    <div class="spacer"></div>
+    <a class="nav-link" href="/pos"><i class="bi bi-shop"></i> Sale</a>
+    <a class="nav-link" href="/inventory"><i class="bi bi-boxes"></i> Inventory</a>
+    <a class="nav-link active" href="/reports"><i class="bi bi-graph-up"></i> Reports</a>
+</header>
+
+<div class="container px-4">
+
+    <div class="d-flex align-items-center mb-3">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-receipt-cutoff"></i>
+            Order <span th:text="${order.id}">#1</span>
+        </h5>
+        <span class="badge ms-2"
+              th:classappend="${order.status.name() == 'COMPLETED'} ? 'bg-success' : 'bg-warning text-dark'"
+              th:text="${order.status}">COMPLETED</span>
+        <div class="ms-auto">
+            <a class="btn btn-sm btn-outline-secondary" th:href="@{/reports(date=${#temporals.format(order.createdAt, 'yyyy-MM-dd')})}">
+                <i class="bi bi-arrow-left"></i> Back to day
+            </a>
+        </div>
+    </div>
+
+    <!-- ============ Receipt-style card ============ -->
+    <div class="card shadow-sm receipt">
+        <div class="card-header bg-white text-center fw-bold">
+            <i class="bi bi-shop"></i> Sale receipt
+        </div>
+        <div class="card-body">
+
+            <table class="table table-sm mb-3">
+                <tbody>
+                <tr><th class="w-25">Date</th>
+                    <td th:text="${#temporals.format(order.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2026-10-04 12:00:00</td></tr>
+                <tr><th>Terminal</th>
+                    <td th:text="${order.terminal != null ? order.terminal : '—'}">T1</td></tr>
+                <tr><th>Customer</th>
+                    <td th:text="${order.customerName != null && !order.customerName.isEmpty() ? order.customerName : 'Walk-in'}">Walk-in</td></tr>
+                <tr><th>Payment</th>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${order.paymentMethod.name() == 'CASH'} ? 'bg-success' : 'bg-primary'"
+                              th:text="${order.paymentMethod}">CASH</span>
+                        <span th:if="${order.paymentMethod.name() == 'CARD' && order.cardLastFour != null}"
+                              class="ms-2 text-muted"
+                              th:text="'card ****' + ${order.cardLastFour}">card ****4242</span>
+                    </td></tr>
+                <tr th:if="${order.paymentMethod.name() == 'CASH' && order.cashTendered != null}">
+                    <th>Tendered / change</th>
+                    <td>
+                        <span th:text="${#numbers.formatDecimal(order.cashTendered, 1, 2)}">0.00</span>
+                        <span class="text-muted">→</span>
+                        <span th:text="${#numbers.formatDecimal(order.cashTendered - order.total, 1, 2)}">0.00</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- ============ Line items ============ -->
+            <table class="table table-sm table-striped">
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Unit</th>
+                    <th class="text-end">Line</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="it : ${items}">
+                    <td>
+                        <span th:text="${it.name}">Coffee</span>
+                        <small class="text-muted d-block" th:text="${it.barcode}">123456</small>
+                    </td>
+                    <td class="text-center" th:text="${it.quantity}">1</td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(it.unitPrice, 1, 2)}">0.00</td>
+                    <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(it.lineTotal, 1, 2)}">0.00</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- ============ Totals ============ -->
+            <div class="row justify-content-end">
+                <div class="col-6 col-md-5">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Subtotal</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(order.subtotal, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Tax</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(order.tax, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr class="fw-bold fs-5 border-top">
+                            <td>Total</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(order.total, 1, 2)}">0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
