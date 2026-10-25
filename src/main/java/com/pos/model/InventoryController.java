@@ -66,4 +66,30 @@ public class InventoryController {
         model.addAttribute("products", productRepository.findActiveOrdered());
         model.addAttribute("categories", productRepository.findDistinctCategories());
         return "inventory";
+    }
+
+    // ---------------- Mutations (all POST + redirect) ----------------
+
+    /** Create a new product or update an existing one (form has hidden id). */
+    @PostMapping("/save")
+    public String save(@ModelAttribute Product form, RedirectAttributes ra) {
+        try {
+            if (form.getStock() == null) form.setStock(0);
+            if (form.getLowStockThreshold() == null) form.setLowStockThreshold(3);
+            if (form.getActive() == null) form.setActive(true);
+            if (form.getPrice() == null) form.setPrice(BigDecimal.ZERO);
+
+            boolean isNew = form.getId() == null;
+            productRepository.save(form);
+            ra.addFlashAttribute("success",
+                    (isNew ? "Created" : "Updated") + " product \"" + form.getName() + "\"");
+            log.info("Inventory: {} product {} ({})", isNew ? "created" : "updated",
+                    form.getId(), form.getBarcode());
+        } catch (DataIntegrityViolationException e) {
+            ra.addFlashAttribute("error",
+                    "Barcode \"" + form.getBarcode() + "\" is already in use");
+        }
+        return "redirect:/inventory";
+    }
+
     
